@@ -173,7 +173,9 @@ def test_admin_dashboard_is_served(tmp_path: Path) -> None:
         assert "Laya MLX Admin" in response.text
         assert "Admin console" in response.text
         assert client.get("/playground").status_code == 200
-        assert "Laya Playground" in client.get("/playground").text
+        playground = client.get("/playground").text
+        assert "Laya Playground" in playground
+        assert "$$=s=>[...document.querySelectorAll(s)]" in playground
         assert client.get("/", follow_redirects=False).headers["location"] == "/playground"
 
 
