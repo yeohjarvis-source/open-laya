@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Laya MLX Admin</title>
+  <style>
+    :root{--bg:#f4f7f6;--panel:#fff;--ink:#17221f;--muted:#687773;--line:#dce5e2;--brand:#0c7664;--brand2:#095c4e;--danger:#b63a3a;--warn:#9a6716;--shadow:0 12px 35px rgba(24,53,46,.08)}
+    *{box-sizing:border-box}body{margin:0;font-family:Inter,ui-sans-serif,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;background:var(--bg);color:var(--ink)}button,input{font:inherit}button{cursor:pointer}
+    .login{position:fixed;inset:0;z-index:20;display:grid;place-items:center;background:radial-gradient(circle at 20% 15%,#d9f3eb 0,transparent 36%),linear-gradient(145deg,#edf5f2,#f8faf9)}
+    .login-card{width:min(440px,calc(100% - 32px));background:#fff;border:1px solid var(--line);border-radius:22px;padding:34px;box-shadow:var(--shadow)}
+    .logo{display:flex;align-items:center;gap:12px;font-weight:800;font-size:19px}.mark{display:grid;place-items:center;width:38px;height:38px;border-radius:11px;background:var(--brand);color:#fff;font-size:18px}.login h1{font-size:28px;margin:32px 0 8px}.login p{color:var(--muted);line-height:1.55;margin:0 0 24px}
+    label{display:block;font-size:13px;font-weight:700;margin:0 0 7px}input{width:100%;border:1px solid #cdd9d5;border-radius:10px;padding:11px 12px;background:#fff;outline:none}input:focus{border-color:var(--brand);box-shadow:0 0 0 3px rgba(12,118,100,.12)}
+    .btn{border:0;border-radius:10px;padding:10px 14px;background:var(--brand);color:#fff;font-weight:700}.btn:hover{background:var(--brand2)}.btn.secondary{background:#edf3f1;color:#334640}.btn.danger{background:#fff0f0;color:var(--danger)}.btn.small{padding:7px 10px;font-size:12px}.login .btn{width:100%;margin-top:14px;padding:12px}.error{color:var(--danger);font-size:13px;margin-top:10px;min-height:18px}
+    .app{min-height:100vh;display:none}.sidebar{position:fixed;inset:0 auto 0 0;width:230px;padding:24px 16px;background:#102b25;color:#dbe9e5}.sidebar .logo{padding:0 8px 24px}.nav{display:grid;gap:5px}.nav button{border:0;border-radius:10px;padding:11px 13px;background:transparent;color:#b9cbc6;text-align:left}.nav button.active,.nav button:hover{background:#21483e;color:#fff}.side-foot{position:absolute;left:16px;right:16px;bottom:20px}.side-foot a{color:#b9cbc6;text-decoration:none;font-size:13px}.logout{width:100%;margin-top:14px;background:#1d4037;color:#fff;border:0;border-radius:9px;padding:9px}
+    main{margin-left:230px;padding:30px;max-width:1500px}.top{display:flex;align-items:center;justify-content:space-between;margin-bottom:26px}.top h1{font-size:27px;margin:0}.top p{color:var(--muted);margin:5px 0 0}.actions{display:flex;gap:9px}.view{display:none}.view.active{display:block}
+    .cards{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px}.card,.panel{background:var(--panel);border:1px solid var(--line);border-radius:15px;box-shadow:0 4px 18px rgba(24,53,46,.035)}.card{padding:19px}.card .label{font-size:13px;color:var(--muted)}.card strong{display:block;font-size:28px;margin-top:8px}.card small{color:var(--muted)}
+    .panel{padding:20px;margin-bottom:18px}.panel-head{display:flex;align-items:center;justify-content:space-between;margin-bottom:16px}.panel h2{font-size:17px;margin:0}.panel-head p{margin:4px 0 0;color:var(--muted);font-size:13px}.form-row{display:grid;grid-template-columns:1.2fr 1fr auto;gap:10px;align-items:end;margin-bottom:20px}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse;font-size:13px}th{text-align:left;color:var(--muted);font-size:11px;text-transform:uppercase;letter-spacing:.05em;padding:10px;border-bottom:1px solid var(--line)}td{padding:12px 10px;border-bottom:1px solid #edf1f0;vertical-align:middle}tr:last-child td{border-bottom:0}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,monospace}.muted{color:var(--muted)}
+    .badge{display:inline-flex;border-radius:999px;padding:4px 8px;font-size:11px;font-weight:700;background:#e4f5ef;color:#08715e}.badge.off{background:#f2f3f3;color:#73817d}.badge.failed,.badge.rejected{background:#fff0f0;color:var(--danger)}.badge.received{background:#fff5df;color:var(--warn)}
+    .empty{text-align:center;padding:35px;color:var(--muted)}.loading{opacity:.55;pointer-events:none}.toast{position:fixed;right:22px;bottom:22px;z-index:40;padding:12px 16px;background:#173a32;color:white;border-radius:10px;box-shadow:var(--shadow);transform:translateY(90px);transition:.2s}.toast.show{transform:translateY(0)}
+    .guide{display:grid;grid-template-columns:auto 1fr;gap:14px;background:#eaf5f1;border:1px solid #cfe6de;border-radius:13px;padding:16px;margin-bottom:18px}.guide-icon{display:grid;place-items:center;width:34px;height:34px;border-radius:10px;background:var(--brand);color:#fff;font-weight:800}.guide h3{font-size:14px;margin:0 0 7px}.guide p{font-size:13px;line-height:1.55;color:#50645e;margin:0}.guide ol{font-size:13px;line-height:1.6;color:#40564f;margin:9px 0 0;padding-left:19px}.guide code{background:rgba(255,255,255,.75);border-radius:5px;padding:2px 5px}
+    dialog{border:0;border-radius:16px;padding:0;box-shadow:0 25px 80px rgba(0,0,0,.25);width:min(680px,calc(100% - 30px))}dialog::backdrop{background:rgba(12,29,25,.5)}.modal{padding:24px}.modal h2{margin:0 0 8px}.modal p{color:var(--muted)}.secret{word-break:break-all;background:#eef5f2;border:1px dashed #9dbbb3;border-radius:10px;padding:14px;margin:15px 0;font-family:ui-monospace,monospace}.modal-actions{display:flex;justify-content:flex-end;gap:8px;margin-top:18px}pre{max-height:55vh;overflow:auto;background:#10251f;color:#dff4ed;padding:16px;border-radius:10px;font-size:12px;white-space:pre-wrap;word-break:break-word}
+    .model-options{display:grid;gap:10px;margin-top:16px}.model-choice{display:grid;grid-template-columns:auto 1fr;gap:12px;align-items:start;border:1px solid var(--line);border-radius:12px;padding:14px;cursor:pointer}.model-choice:hover{border-color:#9fc4ba;background:#f7fbf9}.model-choice:has(input:checked){border-color:var(--brand);background:#ecf7f3}.model-choice input{width:auto;margin:3px 0 0;accent-color:var(--brand)}.model-choice strong{display:block;font-size:14px}.model-choice span{display:block;color:var(--muted);font-size:12px;margin-top:4px}.selection-error{color:var(--danger);font-size:12px;min-height:17px;margin-top:9px}
+    @media(max-width:900px){.sidebar{position:static;width:auto}.sidebar .logo{padding-bottom:12px}.nav{display:flex;overflow:auto}.side-foot{display:none}.app{display:block}main{margin:0;padding:20px}.cards{grid-template-columns:repeat(2,1fr)}.form-row{grid-template-columns:1fr}.top{align-items:flex-start}.top .actions{flex-direction:column}}
+    @media(max-width:520px){.cards{grid-template-columns:1fr}.top{display:block}.top .actions{margin-top:12px;flex-direction:row}.login-card{padding:24px}}
+  </style>
+</head>
+<body>
+  <section class="login" id="login">
+    <div class="login-card">
+      <div class="logo"><span class="mark">L</span> Laya MLX</div>
+      <h1>Admin console</h1>
+      <p>Enter the administrator key configured in <span class="mono">LAYA_ADMIN_KEY</span>. It stays in this browser tab only.</p>
+      <label for="adminKey">Administrator key</label>
+      <input id="adminKey" type="password" autocomplete="current-password" placeholder="Enter admin key">
+      <button class="btn" id="loginBtn">Sign in</button>
+      <div class="error" id="loginError"></div>
+    </div>
+  </section>
+
+  <div class="app" id="app">
+    <aside class="sidebar">
+      <div class="logo"><span class="mark">L</span> Laya MLX</div>
+      <nav class="nav">
+        <button class="active" data-view="overview">Overview</button>
+        <button data-view="users">Users</button>
+        <button data-view="keys">API keys</button>
+        <button data-view="usage">Usage</button>
+        <button data-view="logs">Prediction logs</button>
+      </nav>
+      <div class="side-foot"><a href="/docs" target="_blank">Open API documentation ↗</a><button class="logout" id="logout">Sign out</button></div>
+    </aside>
+    <main>
+      <header class="top">
+        <div><h1 id="pageTitle">Overview</h1><p id="pageSub">Service activity and health</p></div>
+        <div class="actions"><button class="btn secondary" id="refresh">Refresh</button><a class="btn" href="/docs" target="_blank" style="text-decoration:none">API docs</a></div>
+      </header>
+
+      <section class="view active" id="view-overview">
+        <div class="cards">
+          <div class="card"><span class="label">Users</span><strong id="statUsers">—</strong><small id="statActiveUsers">— active</small></div>
+          <div class="card"><span class="label">Active API keys</span><strong id="statKeys">—</strong><small>Across all users</small></div>
+          <div class="card"><span class="label">Successful calls</span><strong id="statSuccess">—</strong><small>All recorded days</small></div>
+          <div class="card"><span class="label">Failed calls</span><strong id="statFailed">—</strong><small>Rejected or failed</small></div>
+        </div>
+        <div class="panel"><div class="panel-head"><div><h2>Recent predictions</h2><p>Latest inference activity</p></div></div><div class="table-wrap"><table><thead><tr><th>Time</th><th>User</th><th>Status</th><th>Model</th><th>Latency</th></tr></thead><tbody id="recentRows"></tbody></table></div></div>
+      </section>
+
+      <section class="view" id="view-users">
+        <div class="panel">
+          <div class="panel-head"><div><h2>Create user</h2><p>Users own API credentials and usage records</p></div></div>
+          <form class="form-row" id="userForm"><div><label>Name</label><input name="name" required placeholder="Acme production"></div><div><label>External ID (optional)</label><input name="external_id" placeholder="customer-123"></div><button class="btn">Create user</button></form>
+          <div class="table-wrap"><table><thead><tr><th>User</th><th>External ID</th><th>Status</th><th>Created</th><th></th></tr></thead><tbody id="userRows"></tbody></table></div>
+        </div>
+      </section>
+
+      <section class="view" id="view-keys">
+        <div class="guide"><div class="guide-icon">?</div><div><h3>How to enable model access for an API key</h3><ol><li>Open <strong>Users</strong> and click <strong>Issue key</strong> beside the user.</li><li>Enter a key name, then select one or more model checkboxes.</li><li>Copy the secret when it appears—it is shown only once.</li><li>To change access later, return here and click <strong>Models</strong> beside the key. Changes take effect immediately.</li></ol><p style="margin-top:8px">A model must also be enabled on the service through <code>LAYA_ENABLED_MODELS</code> before it can be assigned.</p></div></div>
+        <div class="panel"><div class="panel-head"><div><h2>API keys</h2><p>Each key can access only its assigned models. Secrets appear once.</p></div></div><div class="table-wrap"><table><thead><tr><th>Name</th><th>Public ID</th><th>User</th><th>Models</th><th>Status</th><th>Last used</th><th></th></tr></thead><tbody id="keyRows"></tbody></table></div></div>
+      </section>
+
+      <section class="view" id="view-usage">
+        <div class="panel"><div class="panel-head"><div><h2>Daily usage</h2><p>Request outcomes and average inference latency</p></div></div><div class="table-wrap"><table><thead><tr><th>Day</th><th>User</th><th>Requests</th><th>Succeeded</th><th>Failed</th><th>Average latency</th></tr></thead><tbody id="usageRows"></tbody></table></div></div>
+      </section>
+
+      <section class="view" id="view-logs">
+        <div class="panel"><div class="panel-head"><div><h2>Prediction logs</h2><p>Payloads are loaded only when you inspect a record</p></div><a class="btn secondary small" href="/admin/dataset/export" id="exportLink">Export dataset</a></div><div class="table-wrap"><table><thead><tr><th>Time</th><th>Request ID</th><th>User</th><th>Status</th><th>Questions</th><th>Latency</th><th></th></tr></thead><tbody id="logRows"></tbody></table></div></div>
+      </section>
+    </main>
+  </div>
+
+  <dialog id="dialog"><div class="modal"><h2 id="dialogTitle"></h2><div id="dialogBody"></div><div class="modal-actions"><button class="btn secondary" id="dialogClose">Close</button><button class="btn" id="dialogConfirm" style="display:none">Save access</button></div></div></dialog>
+  <div class="toast" id="toast"></div>
+
+  <script>
+    const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+    const state={key:sessionStorage.getItem('layaAdminKey')||'',users:[],keys:[],usage:[],logs:[],models:[],defaultModel:'laya'};
+    const esc=v=>String(v??'—').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+    const date=v=>v?new Date(v).toLocaleString():'Never';
+    const userName=id=>state.users.find(u=>u.id===id)?.name||id||'Unknown';
+    const badge=s=>`<span class="badge ${s==='active'||s==='succeeded'?'':esc(s)}">${esc(s)}</span>`;
+    function toast(message){const el=$('#toast');el.textContent=message;el.classList.add('show');setTimeout(()=>el.classList.remove('show'),2400)}
+    async function api(path,options={}){const headers={Authorization:`Bearer ${state.key}`,...(options.body?{'Content-Type':'application/json'}:{}),...(options.headers||{})};const response=await fetch(path,{...options,headers});if(response.status===401){signOut();throw new Error('Admin key is invalid')}if(!response.ok){let msg=`Request failed (${response.status})`;try{msg=(await response.json()).detail||msg}catch{}throw new Error(msg)}if(response.status===204)return null;return response.json()}
+    async function signIn(){const key=$('#adminKey').value.trim();if(!key)return;state.key=key;$('#loginBtn').disabled=true;$('#loginError').textContent='';try{state.users=await api('/admin/users');sessionStorage.setItem('layaAdminKey',key);$('#login').style.display='none';$('#app').style.display='block';await refresh()}catch(e){state.key='';$('#loginError').textContent=e.message}finally{$('#loginBtn').disabled=false}}
+    function signOut(){sessionStorage.removeItem('layaAdminKey');state.key='';$('#app').style.display='none';$('#login').style.display='grid';$('#adminKey').value=''}
+    async function refresh(){document.body.classList.add('loading');try{const modelResult=await api('/admin/models');state.models=modelResult.data;state.defaultModel=modelResult.default;state.users=await api('/admin/users');const keySets=await Promise.all(state.users.map(u=>api(`/admin/users/${u.id}/api-keys`)));state.keys=keySets.flat();[state.usage,state.logs]=await Promise.all([api('/admin/usage').then(x=>x.items),api('/admin/logs?limit=100').then(x=>x.items)]);render()}catch(e){toast(e.message)}finally{document.body.classList.remove('loading')}}
+    function render(){
+      $('#statUsers').textContent=state.users.length;$('#statActiveUsers').textContent=`${state.users.filter(x=>x.active).length} active`;$('#statKeys').textContent=state.keys.filter(x=>x.active).length;
+      $('#statSuccess').textContent=state.usage.reduce((n,x)=>n+x.succeeded,0);$('#statFailed').textContent=state.usage.reduce((n,x)=>n+x.failed,0);
+      $('#recentRows').innerHTML=state.logs.slice(0,8).map(l=>`<tr><td>${esc(date(l.received_at))}</td><td>${esc(userName(l.user_id))}</td><td>${badge(l.status)}</td><td>${esc(l.model_id)}</td><td>${l.latency_ms==null?'—':esc(l.latency_ms)+' ms'}</td></tr>`).join('')||empty(5);
+      $('#userRows').innerHTML=state.users.map(u=>`<tr><td><strong>${esc(u.name)}</strong><br><span class="muted mono">${esc(u.id)}</span></td><td>${esc(u.external_id)}</td><td>${badge(u.active?'active':'inactive')}</td><td>${esc(date(u.created_at))}</td><td><button class="btn small" onclick="issueKey('${u.id}')">Issue key</button> <button class="btn ${u.active?'danger':'secondary'} small" onclick="toggleUser('${u.id}',${!u.active})">${u.active?'Deactivate':'Activate'}</button></td></tr>`).join('')||empty(5);
+      $('#keyRows').innerHTML=state.keys.map(k=>`<tr><td>${esc(k.name)}</td><td class="mono">${esc(k.public_id)}</td><td>${esc(userName(k.user_id))}</td><td>${(k.allowed_models||[]).map(badge).join(' ')}</td><td>${badge(k.active?'active':'revoked')}</td><td>${esc(date(k.last_used_at))}</td><td><button class="btn secondary small" onclick="editKeyModels('${k.id}')">Models</button> ${k.active?`<button class="btn danger small" onclick="revokeKey('${k.id}')">Revoke</button>`:''}</td></tr>`).join('')||empty(7);
+      $('#usageRows').innerHTML=state.usage.map(x=>`<tr><td>${esc(x.day)}</td><td>${esc(userName(x.user_id))}</td><td>${esc(x.requests)}</td><td>${esc(x.succeeded)}</td><td>${esc(x.failed)}</td><td>${x.avg_latency_ms==null?'—':esc(x.avg_latency_ms)+' ms'}</td></tr>`).join('')||empty(6);
+      $('#logRows').innerHTML=state.logs.map(l=>`<tr><td>${esc(date(l.received_at))}</td><td class="mono">${esc(l.request_id.slice(0,12))}…</td><td>${esc(userName(l.user_id))}</td><td>${badge(l.status)}</td><td>${l.questions?Object.keys(l.questions).length:'—'}</td><td>${l.latency_ms==null?'—':esc(l.latency_ms)+' ms'}</td><td><button class="btn secondary small" onclick="inspectLog('${l.request_id}')">Inspect</button></td></tr>`).join('')||empty(7);
+    }
+    const empty=n=>`<tr><td colspan="${n}" class="empty">No records yet</td></tr>`;
+    let modelChoiceResolve=null;
+    function chooseModels(current){const selected=new Set(current||[state.defaultModel]);$('#dialogTitle').textContent='Choose allowed models';$('#dialogBody').innerHTML=`<p>Select every model this API key may use.</p><div class="model-options">${state.models.map(model=>`<label class="model-choice"><input type="checkbox" name="allowedModel" value="${esc(model.id)}" ${selected.has(model.id)?'checked':''}><span><strong>${esc(model.name)}</strong><span>${esc(model.id)} · ${esc(model.inputs.join(', '))}</span></span></label>`).join('')}</div><div class="selection-error" id="selectionError"></div>`;$('#dialogClose').textContent='Cancel';$('#dialogConfirm').style.display='inline-block';$('#dialog').showModal();return new Promise(resolve=>{modelChoiceResolve=resolve})}
+    function finishModelChoice(value){if(!modelChoiceResolve)return;const resolve=modelChoiceResolve;modelChoiceResolve=null;$('#dialogConfirm').style.display='none';$('#dialogClose').textContent='Close';$('#dialog').close();resolve(value)}
+    async function issueKey(userId){const name=prompt('Name for this API key:','production');if(!name)return;const allowed_models=await chooseModels();if(!allowed_models)return;try{const key=await api(`/admin/users/${userId}/api-keys`,{method:'POST',body:JSON.stringify({name,allowed_models})});showDialog('API key created',`<p>Allowed models: <strong>${esc(key.allowed_models.join(', '))}</strong></p><p>Copy this secret now. It cannot be shown again.</p><div class="secret" id="newSecret">${esc(key.api_key)}</div><button class="btn" onclick="navigator.clipboard.writeText(document.querySelector('#newSecret').textContent);toast('Copied')">Copy key</button>`);await refresh()}catch(e){toast(e.message)}}
+    async function editKeyModels(id){const key=state.keys.find(x=>x.id===id),allowed_models=await chooseModels(key.allowed_models);if(!allowed_models)return;try{await api(`/admin/api-keys/${id}`,{method:'PATCH',body:JSON.stringify({allowed_models})});toast('Model access updated');await refresh()}catch(e){toast(e.message)}}
+    async function revokeKey(id){if(!confirm('Revoke this API key? Existing clients will immediately lose access.'))return;try{await api(`/admin/api-keys/${id}`,{method:'DELETE'});toast('API key revoked');await refresh()}catch(e){toast(e.message)}}
+    async function toggleUser(id,active){if(!active&&!confirm('Deactivate this user and block all of their API keys?'))return;try{await api(`/admin/users/${id}`,{method:'PATCH',body:JSON.stringify({active})});toast(active?'User activated':'User deactivated');await refresh()}catch(e){toast(e.message)}}
+    async function inspectLog(id){try{const item=await api(`/admin/logs/${id}`);showDialog('Prediction record',`<pre>${esc(JSON.stringify(item,null,2))}</pre>`)}catch(e){toast(e.message)}}
+    function showDialog(title,body){$('#dialogTitle').textContent=title;$('#dialogBody').innerHTML=body;$('#dialogConfirm').style.display='none';$('#dialogClose').textContent='Close';$('#dialog').showModal()}
+    $('#userForm').addEventListener('submit',async e=>{e.preventDefault();const data=Object.fromEntries(new FormData(e.target));if(!data.external_id)delete data.external_id;try{await api('/admin/users',{method:'POST',body:JSON.stringify(data)});e.target.reset();toast('User created');await refresh()}catch(err){toast(err.message)}});
+    $$('.nav button').forEach(b=>b.addEventListener('click',()=>{$$('.nav button').forEach(x=>x.classList.remove('active'));b.classList.add('active');$$('.view').forEach(x=>x.classList.remove('active'));$(`#view-${b.dataset.view}`).classList.add('active');const names={overview:['Overview','Service activity and health'],users:['Users','Manage tenants and access'],keys:['API keys','Issue and revoke credentials'],usage:['Usage','Daily request accounting'],logs:['Prediction logs','Inspect inference records and training data']};[$('#pageTitle').textContent,$('#pageSub').textContent]=names[b.dataset.view]}));
+    $('#loginBtn').addEventListener('click',signIn);$('#adminKey').addEventListener('keydown',e=>{if(e.key==='Enter')signIn()});$('#logout').addEventListener('click',signOut);$('#refresh').addEventListener('click',refresh);$('#dialogClose').addEventListener('click',()=>modelChoiceResolve?finishModelChoice(null):$('#dialog').close());$('#dialogConfirm').addEventListener('click',()=>{const models=$$('input[name="allowedModel"]:checked').map(x=>x.value);if(!models.length){$('#selectionError').textContent='Select at least one model.';return}finishModelChoice(models)});$('#dialog').addEventListener('cancel',e=>{if(modelChoiceResolve){e.preventDefault();finishModelChoice(null)}});
+    $('#exportLink').addEventListener('click',async e=>{e.preventDefault();try{const response=await fetch('/admin/dataset/export',{headers:{Authorization:`Bearer ${state.key}`}});if(!response.ok)throw new Error('Export failed');const blob=await response.blob(),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='laya-dataset.jsonl';a.click();URL.revokeObjectURL(a.href)}catch(err){toast(err.message)}});
+    if(state.key){$('#adminKey').value=state.key;signIn()}
+  </script>
+</body>
+</html>

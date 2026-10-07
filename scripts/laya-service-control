@@ -1,0 +1,28 @@
+#!/bin/zsh
+set -eu
+
+label="com.laya.mlx-service"
+domain="gui/$(id -u)"
+plist="$HOME/Library/LaunchAgents/$label.plist"
+
+case "${1:-status}" in
+  start)
+    launchctl bootstrap "$domain" "$plist" 2>/dev/null || launchctl kickstart -k "$domain/$label"
+    ;;
+  stop)
+    launchctl bootout "$domain/$label"
+    ;;
+  restart)
+    launchctl kickstart -k "$domain/$label"
+    ;;
+  status)
+    launchctl print "$domain/$label"
+    ;;
+  logs)
+    tail -n 100 -f /Users/jarvis/project/laya-mlx/data/service.stdout.log /Users/jarvis/project/laya-mlx/data/service.stderr.log
+    ;;
+  *)
+    echo "Usage: $0 {start|stop|restart|status|logs}" >&2
+    exit 2
+    ;;
+esac
