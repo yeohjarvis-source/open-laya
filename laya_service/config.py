@@ -26,7 +26,8 @@ class Settings:
     max_log_export_rows: int = 10_000
     enabled_models: tuple[str, ...] = ("laya",)
     default_model: str = "laya"
-    omni_kit_path: Path | None = None
+    omni_models_path: Path | None = None
+    omni_device: str | None = None
     max_upload_mb: float = 50.0
 
     def __post_init__(self) -> None:
@@ -38,8 +39,8 @@ class Settings:
             raise ValueError("At least one model must be enabled")
         if self.default_model not in self.enabled_models:
             raise ValueError("default_model must be included in enabled_models")
-        if "laya-omni" in self.enabled_models and self.omni_kit_path is None:
-            raise ValueError("omni_kit_path is required when laya-omni is enabled")
+        if "laya-omni" in self.enabled_models and self.omni_models_path is None:
+            raise ValueError("omni_models_path is required when laya-omni is enabled")
 
     @classmethod
     def from_env(cls) -> "Settings":
@@ -53,7 +54,7 @@ class Settings:
         enabled_models = tuple(
             item.strip() for item in os.getenv("LAYA_ENABLED_MODELS", "laya").split(",") if item.strip()
         )
-        omni_path = os.getenv("LAYA_OMNI_KIT_PATH")
+        omni_path = os.getenv("LAYA_OMNI_MODELS_PATH")
         return cls(
             database_path=Path(os.getenv("LAYA_DATABASE_PATH", "data/laya-service.db")),
             admin_key=admin_key,
@@ -67,6 +68,7 @@ class Settings:
             max_log_export_rows=int(os.getenv("LAYA_MAX_LOG_EXPORT_ROWS", "10000")),
             enabled_models=enabled_models,
             default_model=os.getenv("LAYA_DEFAULT_MODEL", "laya"),
-            omni_kit_path=Path(omni_path).expanduser().resolve() if omni_path else None,
+            omni_models_path=Path(omni_path).expanduser().resolve() if omni_path else None,
+            omni_device=os.getenv("LAYA_OMNI_DEVICE") or os.getenv("LAYA_DEVICE") or None,
             max_upload_mb=float(os.getenv("LAYA_MAX_UPLOAD_MB", "50")),
         )

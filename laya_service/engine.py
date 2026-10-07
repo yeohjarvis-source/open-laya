@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import io
 import os
-import sys
 import tempfile
 import threading
 from pathlib import Path
@@ -63,8 +62,9 @@ class LayaTextEngine:
 class LayaOmniEngine:
     """Lazy laya-omni holder. Media is decoded only for an omni request."""
 
-    def __init__(self, kit_path: Path):
-        self.kit_path = kit_path
+    def __init__(self, models_path: Path, device: str | None = None):
+        self.models_path = models_path
+        self.device = device
         self._agent: Any = None
         self._load_lock = threading.Lock()
         self._predict_lock = threading.Lock()
@@ -75,21 +75,43 @@ class LayaOmniEngine:
         with self._load_lock:
             if self._agent is not None:
                 return
-            if not self.kit_path.joinpath("laya_kit.py").is_file():
-                raise RuntimeError(f"Invalid laya-omni kit path: {self.kit_path}")
-            sys.path.insert(0, str(self.kit_path))
+            image_encoder = self.models_path / "siglip2-base-patch16-256"
+            if not image_encoder.is_dir():
+                # Compatibility with the compact, vision-only export used by older kits.
+                image_encoder = self.models_path / "siglip2-vision-fp16"
+            required = {
+                "fusion": self.models_path / "laya-omni",
+                "laya": self.models_path / "laya-multilingual",
+                "image encoder": image_encoder,
+            }
+            missing = [name for name, path in required.items() if not path.is_dir()]
+            if missing:
+                raise RuntimeError(
+                    f"Missing laya-omni model directories: {', '.join(missing)}. "
+                    "Run scripts/download-omni-models.sh first."
+                )
             try:
-                from laya_kit import load
+                from laya_omni import Omni
+                import torch
 
-                self._agent = load()
+                fusion = required["fusion"]
+                audio = fusion / "audio_encoder"
+                device = self.device or (
+                    "mps" if torch.backends.mps.is_available() else
+                    ("cuda" if torch.cuda.is_available() else "cpu")
+                )
+                self._agent = Omni.load(
+                    fusion,
+                    laya=required["laya"],
+                    image_encoder=required["image encoder"],
+                    audio_encoder=audio if audio.is_dir() else None,
+                    device=device,
+                )
             except ImportError as exc:
                 raise RuntimeError(
-                    "laya-omni dependencies are unavailable; run laya-omni-kit/setup.sh and "
-                    "start this service with that environment"
+                    "laya-omni dependencies are unavailable; install this project with "
+                    "the 'omni' extra"
                 ) from exc
-            finally:
-                if sys.path and sys.path[0] == str(self.kit_path):
-                    sys.path.pop(0)
 
     @staticmethod
     def _temp_file(item: dict[str, Any]) -> str:
@@ -130,7 +152,7 @@ class LayaOmniEngine:
             if video:
                 paths.append(self._temp_file(video))
                 try:
-                    from laya_omni.video import load_video
+                    from .media import load_video
 
                     room = 8 - len(images)
                     if room < 1:
@@ -171,8 +193,10 @@ class ModelRouter:
         if "laya" in settings.enabled_models:
             self._engines["laya"] = LayaTextEngine(settings)
         if "laya-omni" in settings.enabled_models:
-            assert settings.omni_kit_path is not None
-            self._engines["laya-omni"] = LayaOmniEngine(settings.omni_kit_path)
+            assert settings.omni_models_path is not None
+            self._engines["laya-omni"] = LayaOmniEngine(
+                settings.omni_models_path, settings.omni_device
+            )
 
     def load(self, model_id: str | None = None) -> None:
         self._get(model_id or self.default_model).load()

@@ -16,6 +16,10 @@ dependencies = [
 
 [project.optional-dependencies]
 mlx = ["laya-mlx>=0.1.0"]
+omni = [
+  "laya-omni[image,audio] @ git+https://github.com/ZHEQIUSHUI/laya-omni.git@dfea79876b16c6ac9c5eafbf5d241b2359f1a4e1",
+  "huggingface-hub>=0.34",
+]
 dev = [
   "httpx>=0.28,<1",
   "pytest>=8.3,<9",

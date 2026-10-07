@@ -28,22 +28,25 @@ The service listens on `0.0.0.0:6767`. The customer playground is at `http://loc
 
 ### Enable Laya Omni
 
-The service process must use the environment created by `laya-omni-kit`, because that environment contains PyTorch, Pillow, media decoders, and the bundled `laya_omni` wheel:
+Install the Apache-2.0 Omni code through the optional dependency, then download the model weights directly from their publishers on Hugging Face:
 
 ```bash
-cd ../laya-omni-kit
-./setup.sh
+uv pip install -e '.[mlx,omni]'
+scripts/download-omni-models.sh
 
-cd ../laya-mlx
-uv pip install --python ../laya-omni-kit/.venv/bin/python -e '.[mlx]'
 export LAYA_ENABLED_MODELS=laya,laya-omni
 export LAYA_DEFAULT_MODEL=laya
-export LAYA_OMNI_KIT_PATH="$(cd ../laya-omni-kit && pwd)"
-../laya-omni-kit/.venv/bin/laya-service
+export LAYA_OMNI_MODELS_PATH="$(pwd)/models"
+laya-service
 ```
 
-Use an absolute `LAYA_OMNI_KIT_PATH` in launchd. If only text inference is needed, keep `LAYA_ENABLED_MODELS=laya` and use the smaller service environment described above.
-Set `LAYA_SERVICE_VENV` to the absolute `laya-omni-kit/.venv` path when using the included launchd script.
+The download script retrieves these repositories without adding their weights to this Git repository:
+
+- `zheqiushui/laya-omni` — fusion and audio encoder; research and non-commercial use;
+- `convaiinnovations/laya-multilingual` — Apache-2.0;
+- `google/siglip2-base-patch16-256` — Apache-2.0.
+
+Review the publisher terms before downloading. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md). Use an absolute `LAYA_OMNI_MODELS_PATH` in launchd. If only text inference is needed, keep `LAYA_ENABLED_MODELS=laya` and install only `.[mlx]`.
 
 For development without downloading the model:
 
@@ -124,7 +127,7 @@ curl -sS http://localhost:6767/v1/predict/multimodal \
   -F model=laya-omni \
   -F state=Image. \
   -F 'questions={"animal":{"type":"choice","instructions":"What animal?","criteria":["cat","dog"]}}' \
-  -F images=@../laya-omni-kit/samples/cats.jpg
+  -F images=@/path/to/photo.jpg
 ```
 
 The JSON `/v1/predict` endpoint also accepts `model: "laya-omni"` for text-only Omni calls. The multipart endpoint accepts repeated `images` fields (up to eight including video frames), one `audio`, one `video`, `video_frames` from 1–8, and `detail=true|false`.
@@ -200,3 +203,7 @@ The agent writes stdout and stderr to `data/service.stdout.log` and `data/servic
 ## Configuration
 
 See [`.env.example`](.env.example). Required secrets are deliberately not given working defaults. `LAYA_ENABLED_MODELS` controls the server-wide model catalog, while each key's `allowed_models` is a subset of that catalog. Existing keys are migrated with `laya` access only. `LAYA_MODEL_ID` is the underlying text checkpoint; set `LAYA_MODEL_REVISION` to a fixed upstream revision in production so dataset provenance stays reproducible.
+
+## Licensing
+
+The API repository does not contain or redistribute model weights. The optional Omni Python package is installed from its Apache-2.0 GitHub source. Model files are downloaded directly from Hugging Face and remain governed by their publishers' terms; in particular, the published Laya Omni fusion is for research and non-commercial use. See [THIRD_PARTY_NOTICES.md](THIRD_PARTY_NOTICES.md).

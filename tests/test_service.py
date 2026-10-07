@@ -52,7 +52,7 @@ def make_client(tmp_path: Path, models: tuple[str, ...] = ("laya",)) -> TestClie
         api_key_pepper="pepper-with-at-least-thirty-two-characters",
         eager_load_model=True,
         enabled_models=models,
-        omni_kit_path=tmp_path if "laya-omni" in models else None,
+        omni_models_path=tmp_path if "laya-omni" in models else None,
     )
     return TestClient(create_app(settings, FakeEngine(models)))
 
